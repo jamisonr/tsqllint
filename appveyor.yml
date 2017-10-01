@@ -11,6 +11,8 @@ max_jobs: 2
 
 environment:
   nodejs_version: "6"
+  COVERALLS_REPO_TOKEN:  
+    secure: rhkFWUMcufhM+G52drrNdm1g6CtCDfJjzlUY01jSYqBgzvX/3TKx8NeYBCiUSrKk
 
 # Build worker image (VM template)
 image: Visual Studio 2017
@@ -39,7 +41,7 @@ build_script:
   - ./scripts/build.cmd
 
 after_test:
-  - ./scripts/cover.cmd
+  - cmd: packages\coveralls.io.1.4.1\tools\coveralls.net.exe --opencover .\coverage\coverage_results.xml -r %COVERALLS_REPO_TOKEN%
 
 after_build:
   - cmd: npm pack

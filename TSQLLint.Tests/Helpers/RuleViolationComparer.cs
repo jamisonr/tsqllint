@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TSQLLint.Lib.Rules.RuleViolations;
 
 namespace TSQLLint.Tests.Helpers
 {
-    public class RuleViolationCompare : IComparer, IComparer<RuleViolation>
+    public class RuleViolationComparer : IComparer, IComparer<RuleViolation>
     {
         public int Compare(object x, object y)
         {

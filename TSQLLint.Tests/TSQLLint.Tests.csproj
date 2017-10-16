@@ -73,7 +73,7 @@
     <Compile Include="UnitTests\CommandLineOptions\CommandLineOptionHandlerTest.cs" />
     <Compile Include="UnitTests\CommandLineOptions\CommandLineParserTest.cs" />
     <Compile Include="UnitTests\Config\ConfigFileGeneratorTests.cs" />
-    <Compile Include="Helpers\RuleViolationCompare.cs" />
+    <Compile Include="Helpers\RuleViolationComparer.cs" />
     <Compile Include="UnitTests\Parser\SqlFileProcessorTests.cs" />
     <Compile Include="UnitTests\PluginHandler\AssemblyWrapperTests.cs" />
     <Compile Include="UnitTests\PluginHandler\PluginContextTests.cs" />

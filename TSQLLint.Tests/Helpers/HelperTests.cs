@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using TSQLLint.Lib.Rules.RuleViolations;
@@ -7,7 +7,7 @@ namespace TSQLLint.Tests.Helpers
 {
     public class RuleViolationCompareTests
     {
-        private readonly RuleViolationCompare RuleViolationCompare = new RuleViolationCompare();
+        private readonly RuleViolationComparer _ruleViolationComparer = new RuleViolationComparer();
 
         public static readonly object[] LineComparison = 
         {
@@ -40,13 +40,13 @@ namespace TSQLLint.Tests.Helpers
         [Test, TestCaseSource("LineComparison")]
         public void RuleTests(List<RuleViolation> ruleViolations)
         {
-            Assert.AreEqual(-1, RuleViolationCompare.Compare(ruleViolations[0], ruleViolations[1]));
+            Assert.AreEqual(-1, _ruleViolationComparer.Compare(ruleViolations[0], ruleViolations[1]));
         }
 
         [Test]
         public void RuleCompareShouldThrow()
         {
-            var ex = Assert.Throws<InvalidOperationException>(() => RuleViolationCompare.Compare(new object(), new object()));
+            var ex = Assert.Throws<InvalidOperationException>(() => _ruleViolationComparer.Compare(new object(), new object()));
 
             Assert.That(ex.Message, Is.EqualTo("cannot compare null object"));
         }

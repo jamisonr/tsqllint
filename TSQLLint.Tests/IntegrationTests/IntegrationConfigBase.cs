@@ -41,7 +41,7 @@ namespace TSQLLint.Tests.IntegrationTests
             new RuleViolation(ruleName: "upper-lower", startLine: 59, startColumn: 8),
         };
 
-        private readonly RuleViolationCompare _comparer = new RuleViolationCompare();
+        private readonly RuleViolationComparer _ruleViolationComparer = new RuleViolationComparer();
 
         protected void PerformApplicationTest(List<string> argumentsUnderTest, string expectedMessage, List<RuleViolation> expectedRuleViolations, int expectedFileCount)
         {
@@ -49,15 +49,15 @@ namespace TSQLLint.Tests.IntegrationTests
             expectedRuleViolations = expectedRuleViolations.OrderBy(o => o.Line).ToList();
             
             var appArgs = argumentsUnderTest.ToArray();
-            var testReporter = Substitute.For<IReporter>();
+            var mockReporter = Substitute.For<IReporter>();
 
             var reportedViolations = new List<IRuleViolation>();
-            testReporter.When(reporter => reporter.ReportViolation(Arg.Any<IRuleViolation>())).Do(x => reportedViolations.Add(x.Arg<IRuleViolation>()));
+            mockReporter.When(reporter => reporter.ReportViolation(Arg.Any<IRuleViolation>())).Do(x => reportedViolations.Add(x.Arg<IRuleViolation>()));
 
             var reportedMessages = new List<string>();
-            testReporter.When(reporter => reporter.Report(Arg.Any<string>())).Do(x => reportedMessages.Add(x.Arg<string>()));
+            mockReporter.When(reporter => reporter.Report(Arg.Any<string>())).Do(x => reportedMessages.Add(x.Arg<string>()));
 
-            var application = new Application(appArgs, testReporter);
+            var application = new Application(appArgs, mockReporter);
 
             // act
             application.Run();
@@ -66,7 +66,7 @@ namespace TSQLLint.Tests.IntegrationTests
             Assert.AreEqual(expectedRuleViolations.Count, reportedViolations.Count);
             reportedViolations = reportedViolations.OrderBy(o => o.Line).ToList();
             Assert.IsTrue(string.IsNullOrEmpty(expectedMessage) || reportedMessages.Contains(expectedMessage));
-            CollectionAssert.AreEqual(expectedRuleViolations, reportedViolations, _comparer);
+            CollectionAssert.AreEqual(expectedRuleViolations, reportedViolations, _ruleViolationComparer);
         }
     }
 }

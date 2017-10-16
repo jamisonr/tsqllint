@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using NSubstitute;
 using NUnit.Framework;
 using TSQLLint.Common;
@@ -13,7 +11,7 @@ using TSQLLint.Tests.Helpers;
 
 namespace TSQLLint.Tests.IntegrationTests
 {
-    public class IntegrationConfigBase
+    public class IntegrationBaseTest
     {
         protected readonly string DefaultConfigFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".tsqllintrc");
 
@@ -22,25 +20,35 @@ namespace TSQLLint.Tests.IntegrationTests
 
         protected static readonly IEnumerable<RuleViolation> TestFileOneRuleViolations = new List<RuleViolation>
         {
-            new RuleViolation(ruleName: "conditional-begin-end", startLine: 2, startColumn: 1),
-            new RuleViolation(ruleName: "data-compression", startLine: 6, startColumn: 1),
-            new RuleViolation(ruleName: "data-type-length", startLine: 13, startColumn: 16),
-            new RuleViolation(ruleName: "disallow-cursors", startLine: 17, startColumn: 1),
-            new RuleViolation(ruleName: "information-schema", startLine: 20, startColumn: 27),
-            new RuleViolation(ruleName: "keyword-capitalization", startLine: 23, startColumn: 1),
-            new RuleViolation(ruleName: "multi-table-alias", startLine: 27, startColumn: 10),
-            new RuleViolation(ruleName: "object-property", startLine: 38, startColumn: 7),
-            new RuleViolation(ruleName: "print-statement", startLine: 42, startColumn: 1),
-            new RuleViolation(ruleName: "schema-qualify", startLine: 45, startColumn: 17),
-            new RuleViolation(ruleName: "select-star", startLine: 48, startColumn: 8),
-            new RuleViolation(ruleName: "semicolon-termination", startLine: 51, startColumn: 31),
-            new RuleViolation(ruleName: "set-ansi", startLine: 1, startColumn: 1),
-            new RuleViolation(ruleName: "set-nocount", startLine: 1, startColumn: 1),
-            new RuleViolation(ruleName: "set-quoted-identifier", startLine: 1, startColumn: 1),
-            new RuleViolation(ruleName: "set-transaction-isolation-level", startLine: 1, startColumn: 1),
-            new RuleViolation(ruleName: "upper-lower", startLine: 59, startColumn: 8),
+            new RuleViolation("conditional-begin-end", 2, 1),
+            new RuleViolation("data-compression", 6, 1),
+            new RuleViolation("data-type-length", 13, 16),
+            new RuleViolation("disallow-cursors", 17, 1),
+            new RuleViolation("information-schema", 20, 27),
+            new RuleViolation("keyword-capitalization", 23, 1),
+            new RuleViolation("multi-table-alias", 27, 10),
+            new RuleViolation("object-property", 38, 7),
+            new RuleViolation("print-statement", 42, 1),
+            new RuleViolation("schema-qualify", 45, 17),
+            new RuleViolation("select-star", 48, 8),
+            new RuleViolation("semicolon-termination", 51, 31),
+            new RuleViolation("set-ansi", 1, 1),
+            new RuleViolation("set-nocount", 1, 1),
+            new RuleViolation("set-quoted-identifier", 1, 1),
+            new RuleViolation("set-transaction-isolation-level", 1, 1),
+            new RuleViolation("upper-lower", 59, 8)
+        };
+        
+        protected static readonly IEnumerable<RuleViolation> TestFileInvalidSyntaxRuleViolations = new List<RuleViolation>
+        {
+            new RuleViolation(null, null, "TSQL not syntactically correct", 0, 0, RuleViolationSeverity.Error)
         };
 
+        protected static readonly IEnumerable<RuleViolation> TestFileTwoRuleViolations = new List<RuleViolation>
+        {
+            new RuleViolation("print-statement", 5, 1)
+        };
+        
         private readonly RuleViolationComparer _ruleViolationComparer = new RuleViolationComparer();
 
         protected void PerformApplicationTest(List<string> argumentsUnderTest, string expectedMessage, List<RuleViolation> expectedRuleViolations, int expectedFileCount)
@@ -52,7 +60,8 @@ namespace TSQLLint.Tests.IntegrationTests
             var mockReporter = Substitute.For<IReporter>();
 
             var reportedViolations = new List<IRuleViolation>();
-            mockReporter.When(reporter => reporter.ReportViolation(Arg.Any<IRuleViolation>())).Do(x => reportedViolations.Add(x.Arg<IRuleViolation>()));
+            var violations = reportedViolations;
+            mockReporter.When(reporter => reporter.ReportViolation(Arg.Any<IRuleViolation>())).Do(x => violations.Add(x.Arg<IRuleViolation>()));
 
             var reportedMessages = new List<string>();
             mockReporter.When(reporter => reporter.Report(Arg.Any<string>())).Do(x => reportedMessages.Add(x.Arg<string>()));

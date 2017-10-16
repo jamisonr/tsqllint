@@ -12,10 +12,7 @@ namespace TSQLLint.Tests.UnitTests.Config
     {
         private string _configFileName;
 
-        private string ConfigFileName
-        {
-            get { return string.IsNullOrWhiteSpace(_configFileName) ? SetConfigFile() : _configFileName; }
-        }
+        private string ConfigFileName => string.IsNullOrWhiteSpace(_configFileName) ? SetConfigFile() : _configFileName;
 
         [TearDown]
         public void TearDown()

@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using NSubstitute;
 using NUnit.Framework;
 using TSQLLint.Common;
 using TSQLLint.Console.ConfigHandler;
@@ -16,7 +17,7 @@ namespace TSQLLint.Tests.IntegrationTests
         [OneTimeSetUp]
         public void Setup()
         {
-            var configFileGenerator = new ConfigFileGenerator(new TestReporter());
+            var configFileGenerator = new ConfigFileGenerator(Substitute.For<IReporter>());
             configFileGenerator.WriteConfigFile(DefaultConfigFile);
         }
 

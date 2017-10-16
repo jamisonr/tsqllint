@@ -1,8 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using NSubstitute;
 using NUnit.Framework;
 using TSQLLint.Common;
 using TSQLLint.Console;
@@ -44,55 +46,27 @@ namespace TSQLLint.Tests.IntegrationTests
         protected void PerformApplicationTest(List<string> argumentsUnderTest, string expectedMessage, List<RuleViolation> expectedRuleViolations, int expectedFileCount)
         {
             // arrange
+            expectedRuleViolations = expectedRuleViolations.OrderBy(o => o.Line).ToList();
+            
             var appArgs = argumentsUnderTest.ToArray();
-            var testReporter = new TestReporter();
+            var testReporter = Substitute.For<IReporter>();
+
+            var reportedViolations = new List<IRuleViolation>();
+            testReporter.When(reporter => reporter.ReportViolation(Arg.Any<IRuleViolation>())).Do(x => reportedViolations.Add(x.Arg<IRuleViolation>()));
+
+            var reportedMessages = new List<string>();
+            testReporter.When(reporter => reporter.Report(Arg.Any<string>())).Do(x => reportedMessages.Add(x.Arg<string>()));
+
             var application = new Application(appArgs, testReporter);
 
             // act
             application.Run();
 
             // assert
-            Assert.IsTrue(string.IsNullOrEmpty(expectedMessage) || testReporter.Messages.Contains(expectedMessage));
-
-            expectedRuleViolations = expectedRuleViolations.OrderBy(o => o.Line).ToList();
-            var reportedRuleViolations = testReporter.RuleViolations.OrderBy(o => o.Line).ToList();
-            Assert.AreEqual(expectedRuleViolations.Count, expectedRuleViolations.Count);
-            CollectionAssert.AreEqual(expectedRuleViolations, reportedRuleViolations, _comparer);
-
-            Assert.AreEqual(expectedFileCount, testReporter.FileCount);
-        }
-
-        protected class TestReporter : IReporter
-        {
-            public TestReporter()
-            {
-                RuleViolations = new List<IRuleViolation>();
-                Messages = new List<string>();
-            }
-
-            public List<string> Messages { get; private set; }
-
-            public List<IRuleViolation> RuleViolations { get; private set; }
-
-            public int FileCount { get; private set; }
-
-            public void ReportResults(TimeSpan timespan, int fileCount)
-            {
-                FileCount = fileCount;
-            }
-
-            public void Report(string message)
-            {
-                Messages.Add(message);
-            }
-
-            public void ReportViolation(IRuleViolation violation)
-            {
-                RuleViolations.Add(violation);
-            }
-
-            [ExcludeFromCodeCoverage]
-            public void ReportViolation(string fileName, string line, string column, string severity, string ruleName, string violationText) { }
+            Assert.AreEqual(expectedRuleViolations.Count, reportedViolations.Count);
+            reportedViolations = reportedViolations.OrderBy(o => o.Line).ToList();
+            Assert.IsTrue(string.IsNullOrEmpty(expectedMessage) || reportedMessages.Contains(expectedMessage));
+            CollectionAssert.AreEqual(expectedRuleViolations, reportedViolations, _comparer);
         }
     }
 }

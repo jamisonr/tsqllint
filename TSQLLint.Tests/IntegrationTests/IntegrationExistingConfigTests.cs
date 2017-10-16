@@ -14,24 +14,21 @@ namespace TSQLLint.Tests.IntegrationTests
 {
     public class IntegrationExistingConfigTests : IntegrationConfigBase
     {
-        [OneTimeSetUp]
-        public void Setup()
-        {
-            var configFileGenerator = new ConfigFileGenerator(Substitute.For<IReporter>());
-            configFileGenerator.WriteConfigFile(DefaultConfigFile);
-        }
-
-        [OneTimeTearDown]
-        public void TearDown()
-        {
-            File.Delete(DefaultConfigFile);
-        }
-
         private static readonly string InvalidConfigFile = Path.Combine(TestFileDirectory, @".tsqllintrc-foo");
-
         private static readonly string ValidConfigFile = Path.Combine(TestFileDirectory, @".tsqllintrc");
         private static readonly string TestFileTwo = Path.Combine(TestFileDirectory, @"TestFileSubDirectory\integration-test-two.sql");
         private static readonly string TestFileInvalidSyntax = Path.Combine(TestFileDirectory, @"invalid-syntax.sql");
+
+        private static readonly IEnumerable<RuleViolation> TestFileInvalidSyntaxRuleViolations = new List<RuleViolation>
+        {
+            new RuleViolation(null, null, "TSQL not syntactically correct", 0, 0, RuleViolationSeverity.Error)
+        };
+
+        private static readonly IEnumerable<RuleViolation> TestFileTwoRuleViolations = new List<RuleViolation>
+        {
+            new RuleViolation(ruleName: "print-statement", startLine: 5, startColumn: 1),
+        };
+        
         private static List<RuleViolation> _AllRuleViolations;
         private static List<RuleViolation> _MultiFileRuleViolations;
 
@@ -52,16 +49,6 @@ namespace TSQLLint.Tests.IntegrationTests
                 return fvi.FileVersion;
             }
         }
-
-        private static readonly IEnumerable<RuleViolation> TestFileInvalidSyntaxRuleViolations = new List<RuleViolation>
-        {
-            new RuleViolation(null, null, "TSQL not syntactically correct", 0, 0, RuleViolationSeverity.Error)
-        };
-
-        private static readonly IEnumerable<RuleViolation> TestFileTwoRuleViolations = new List<RuleViolation>
-        {
-            new RuleViolation(ruleName: "print-statement", startLine: 5, startColumn: 1),
-        };
 
         public static IEnumerable<RuleViolation> MultiFileRuleViolations
         {
@@ -207,7 +194,7 @@ namespace TSQLLint.Tests.IntegrationTests
             }
         }
 
-        [TestCaseSource("ExistingConfigTestCases")]
+        [TestCaseSource(nameof(ExistingConfigTestCases))]
         public void RunExistingConfigTest(List<string> argumentsUnderTest, string expectedMessage, List<RuleViolation> expectedRuleViolations, int expectedFileCount)
         {
             PerformApplicationTest(argumentsUnderTest, expectedMessage, expectedRuleViolations, expectedFileCount);
